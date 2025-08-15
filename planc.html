@@ -1,0 +1,241 @@
+import React, { useState } from 'react';
+import {
+  Home,
+  Users,
+  DollarSign,
+  ShoppingCart,
+  Menu,
+  X,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+
+// Main component for the ERP system
+const App = () => {
+  const [activeModule, setActiveModule] = useState('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const modules = [
+    { id: 'dashboard', name: 'ภาพรวม', icon: Home },
+    { id: 'finance', name: 'การเงิน', icon: DollarSign },
+    { id: 'sales', name: 'การขาย', icon: ShoppingCart },
+    { id: 'hr', name: 'ทรัพยากรบุคคล', icon: Users },
+  ];
+
+  const renderModuleContent = () => {
+    switch (activeModule) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'finance':
+        return <Finance />;
+      case 'sales':
+        return <Sales />;
+      case 'hr':
+        return <HR />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
+  const Sidebar = () => (
+    <div className={`fixed inset-y-0 left-0 bg-gray-800 text-white w-64 p-6 transform transition-transform duration-300 z-50 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 md:flex-shrink-0 md:shadow-lg rounded-r-3xl`}>
+      <div className="flex justify-between items-center mb-10">
+        <h2 className="text-2xl font-bold text-indigo-400">ERP System</h2>
+        <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-white hover:text-indigo-400 transition-colors duration-200">
+          <X size={24} />
+        </button>
+      </div>
+      <nav className="space-y-4">
+        {modules.map((module) => (
+          <button
+            key={module.id}
+            onClick={() => {
+              setActiveModule(module.id);
+              setIsSidebarOpen(false);
+            }}
+            className={`w-full flex items-center p-3 rounded-xl transition-all duration-300
+              ${activeModule === module.id
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }
+            `}
+          >
+            <module.icon className="mr-4" size={20} />
+            <span className="font-semibold">{module.name}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex font-sans antialiased">
+      <Sidebar />
+      <div className="flex-1 flex flex-col transition-all duration-300">
+        <header className="bg-white shadow-sm p-4 flex items-center justify-between md:hidden sticky top-0 z-40">
+          <button onClick={() => setIsSidebarOpen(true)} className="text-gray-700 hover:text-indigo-600 transition-colors duration-200">
+            <Menu size={24} />
+          </button>
+          <h1 className="text-xl font-bold text-gray-800">{modules.find(m => m.id === activeModule).name}</h1>
+          <div className="w-6"></div> {/* Placeholder for alignment */}
+        </header>
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+          <div className="md:hidden">
+            {/* Renders module content for mobile devices */}
+            {renderModuleContent()}
+          </div>
+          <div className="hidden md:block">
+            {/* Renders module content for desktop devices */}
+            {renderModuleContent()}
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+// --- Module Components ---
+
+const Dashboard = () => (
+  <div className="p-6 bg-white rounded-3xl shadow-xl animate-fade-in-down">
+    <h1 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">ภาพรวมระบบ</h1>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <StatCard title="รายได้ทั้งหมด" value="฿2,500,000" description="เพิ่มขึ้น 12% จากเดือนที่แล้ว" color="indigo" />
+      <StatCard title="ค่าใช้จ่ายทั้งหมด" value="฿1,200,000" description="ลดลง 5% จากเดือนที่แล้ว" color="red" />
+      <StatCard title="จำนวนพนักงาน" value="50 คน" description="เพิ่มขึ้น 2 คนในไตรมาสนี้" color="green" />
+      <StatCard title="คำสั่งซื้อใหม่" value="150 รายการ" description="คำสั่งซื้อที่รอดำเนินการ" color="yellow" />
+    </div>
+  </div>
+);
+
+const Finance = () => (
+  <div className="p-6 bg-white rounded-3xl shadow-xl animate-fade-in-down">
+    <h1 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">โมดูลการเงิน</h1>
+    <p className="text-gray-600 mb-8">
+      จัดการรายรับ, รายจ่าย, และบัญชีต่างๆ ขององค์กร
+    </p>
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-6 rounded-2xl shadow-md">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-700">รายรับ-รายจ่าย</h2>
+        <p>แสดงรายการธุรกรรมทางการเงิน</p>
+      </div>
+      <div className="bg-gray-50 p-6 rounded-2xl shadow-md">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-700">บัญชี</h2>
+        <p>แสดงยอดคงเหลือในบัญชีต่างๆ</p>
+      </div>
+    </div>
+  </div>
+);
+
+const Sales = () => (
+  <div className="p-6 bg-white rounded-3xl shadow-xl animate-fade-in-down">
+    <h1 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">โมดูลการขาย</h1>
+    <p className="text-gray-600 mb-8">
+      จัดการคำสั่งซื้อ, ลูกค้า, และรายงานการขาย
+    </p>
+    <div className="space-y-6">
+      <div className="bg-gray-50 p-6 rounded-2xl shadow-md">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-700">คำสั่งซื้อ</h2>
+        <p>จัดการสถานะคำสั่งซื้อของลูกค้า</p>
+      </div>
+      <div className="bg-gray-50 p-6 rounded-2xl shadow-md">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-700">ลูกค้า</h2>
+        <p>ดูข้อมูลและประวัติการซื้อของลูกค้า</p>
+      </div>
+    </div>
+  </div>
+);
+
+const initialEmployees = [
+  { id: 1, name: 'สมชาย', position: 'ผู้จัดการ', department: 'การตลาด' },
+  { id: 2, name: 'มานี', position: 'พนักงานขาย', department: 'การขาย' },
+  { id: 3, name: 'ปรีชา', position: 'นักบัญชี', department: 'การเงิน' },
+];
+
+const HR = () => {
+  const [employees, setEmployees] = useState(initialEmployees);
+  const [newEmployee, setNewEmployee] = useState({ name: '', position: '', department: '' });
+
+  const handleAddEmployee = () => {
+    if (newEmployee.name && newEmployee.position && newEmployee.department) {
+      setEmployees([...employees, { ...newEmployee, id: Date.now() }]);
+      setNewEmployee({ name: '', position: '', department: '' });
+    }
+  };
+
+  const handleDeleteEmployee = (id) => {
+    setEmployees(employees.filter(employee => employee.id !== id));
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-3xl shadow-xl animate-fade-in-down">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">โมดูลทรัพยากรบุคคล</h1>
+      <p className="text-gray-600 mb-8">
+        จัดการข้อมูลพนักงาน, ตำแหน่ง, และฝ่ายงาน
+      </p>
+      <div className="space-y-6">
+        <div className="bg-gray-50 p-6 rounded-2xl shadow-md">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">เพิ่มพนักงานใหม่</h2>
+          <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+            <input
+              type="text"
+              placeholder="ชื่อ"
+              value={newEmployee.name}
+              onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
+              className="p-3 border border-gray-300 rounded-lg flex-1"
+            />
+            <input
+              type="text"
+              placeholder="ตำแหน่ง"
+              value={newEmployee.position}
+              onChange={(e) => setNewEmployee({ ...newEmployee, position: e.target.value })}
+              className="p-3 border border-gray-300 rounded-lg flex-1"
+            />
+            <input
+              type="text"
+              placeholder="ฝ่าย"
+              value={newEmployee.department}
+              onChange={(e) => setNewEmployee({ ...newEmployee, department: e.target.value })}
+              className="p-3 border border-gray-300 rounded-lg flex-1"
+            />
+            <button
+              onClick={handleAddEmployee}
+              className="bg-indigo-600 text-white p-3 rounded-lg flex items-center justify-center hover:bg-indigo-700 transition-colors duration-200 shadow-lg"
+            >
+              <Plus size={20} className="mr-2" /> เพิ่ม
+            </button>
+          </div>
+        </div>
+        <div className="bg-gray-50 p-6 rounded-2xl shadow-md">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-700">รายการพนักงาน</h2>
+          <ul className="space-y-2">
+            {employees.map((employee) => (
+              <li key={employee.id} className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                <div>
+                  <p className="font-semibold text-gray-800">{employee.name}</p>
+                  <p className="text-sm text-gray-500">{employee.position} - {employee.department}</p>
+                </div>
+                <button
+                  onClick={() => handleDeleteEmployee(employee.id)}
+                  className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const StatCard = ({ title, value, description, color }) => (
+  <div className={`p-6 bg-white rounded-2xl shadow-lg border-l-4 border-${color}-500 transform hover:scale-105 transition-transform duration-300`}>
+    <p className="text-lg font-medium text-gray-500">{title}</p>
+    <p className="text-4xl font-bold text-gray-900 mt-2">{value}</p>
+    <p className={`text-sm mt-4 text-${color}-600`}>{description}</p>
+  </div>
+);
+
+export default App;
