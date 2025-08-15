@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winai Phanarkat - Full-Stack Developer</title>
+    <style>
+        /* --- Design System & General Styles --- */
+        :root {
+            --bg-color: #121212;
+            --pane-color: #1e1e1e;
+            --primary-accent-color: #20c997; /* A nice mint green */
+            --text-color: #e0e0e0;
+            --text-secondary-color: #a0a0a0;
+            --border-color: #333;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            display: flex;
+        }
+
+        /* --- Left Pane (Fixed) --- */
+        .left-pane {
+            width: 40%;
+            max-width: 450px;
+            min-width: 320px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--pane-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 50px 40px;
+            box-sizing: border-box;
+            box-shadow: 5px 0px 15px rgba(0,0,0,0.2);
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid var(--primary-accent-color);
+        }
+
+        .left-pane h1 {
+            font-size: 2.5rem;
+            margin: 20px 0 5px 0;
+            color: white;
+        }
+
+        .left-pane .tagline {
+            font-size: 1.2rem;
+            color: var(--text-secondary-color);
+            margin-bottom: 40px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav li {
+            margin: 15px 0;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--text-secondary-color);
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.2s ease-in-out;
+            padding: 5px 0;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--primary-accent-color);
+            letter-spacing: 1px;
+        }
+
+        .pane-footer {
+            margin-top: 20px;
+        }
+
+        #lang-toggle {
+            background: none;
+            border: 1px solid var(--primary-accent-color);
+            color: var(--primary-accent-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        #lang-toggle:hover {
+            background-color: var(--primary-accent-color);
+            color: var(--bg-color);
+        }
+
+
+        /* --- Right Pane (Scrollable Content) --- */
+        .right-pane {
+            margin-left: 40%; /* Match left pane width */
+            width: 60%; /* The rest of the space */
+            padding: 50px 60px;
+            box-sizing: border-box;
+        }
+
+        .right-pane section {
+            margin-bottom: 80px;
+            padding-top: 20px; /* For scroll-spy offset */
+        }
+        
+        .right-pane h2 {
+            font-size: 2rem;
+            color: var(--primary-accent-color);
+            margin-bottom: 25px;
+            display: inline-block;
+        }
+
+        .card {
+            background-color: var(--pane-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .service-item {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: var(--text-secondary-color); }
+        input[type="text"], input[type="email"], textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            background-color: #2a2a2a;
+            color: white;
+            box-sizing: border-box;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-accent-color);
+        }
+
+        .btn {
+            display: inline-block; padding: 12px 25px; border-radius: 5px; text-decoration: none; color: white;
+            font-weight: bold; cursor: pointer; border: none; text-align: center; width: 100%; box-sizing: border-box; margin-top: 10px; transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-primary { background-color: var(--primary-accent-color); color: var(--bg-color); }
+        .btn-secondary { background-color: #555; }
+        .btn-worldcoin { background-color: #1e244d; color: white;}
+
+        .contact-payment-grid {
+            display: grid; grid-template-columns: 1fr; gap: 30px;
+        }
+
+        @media (min-width: 1200px) {
+            .contact-payment-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        /* --- Responsive Design for Tablet & Mobile --- */
+        @media (max-width: 992px) {
+            body {
+                flex-direction: column;
+            }
+            .left-pane {
+                position: relative;
+                width: 100%;
+                height: auto;
+                max-width: 100%;
+                min-width: 100%;
+                padding: 30px 20px;
+                text-align: center;
+            }
+            .left-pane .profile-info, .left-pane nav {
+                display: none; /* Hide nav links in mobile view for simplicity, can be replaced by a hamburger menu */
+            }
+            .right-pane {
+                margin-left: 0;
+                width: 100%;
+                padding: 30px 20px;
+            }
+            .left-pane h1 { font-size: 2rem; }
+            .right-pane h2 { font-size: 1.8rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="left-pane">
+        <div>
+            <div class="profile-info">
+                <img src="https://winaiac.github.io/About-Winai/56228773.png" alt="Winai Phanarkat Profile Picture" class="profile-pic">
+                <h1 data-lang-key="name">Winai Phanarkat</h1>
+                <p class="tagline" data-lang-key="tagline">Full-Stack Developer & Crypto Specialist</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#about" class="nav-link active" data-lang-key="nav_about">About Me</a></li>
+                    <li><a href="#services" class="nav-link" data-lang-key="nav_services">Services</a></li>
+                    <li><a href="#worldcoin" class="nav-link" data-lang-key="worldcoin_title">World ID</a></li>
+                    <li><a href="#contact" class="nav-link" data-lang-key="nav_contact">Contact & Payment</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="pane-footer">
+            <button id="lang-toggle">ไทย</button>
+        </div>
+    </div>
+
+    <main class="right-pane">
+
+        <section id="about">
+            <h2 data-lang-key="nav_about">About Me</h2>
+            <div class="card">
+                <p data-lang-key="about_p1">
+                    Hello! I'm Winai, a passionate Full-Stack Developer with expertise in building modern, responsive web and mobile applications. My experience spans from creating robust backend systems and databases to crafting intuitive user interfaces.
+                </p>
+                <p data-lang-key="about_p2">
+                    I also specialize in the exciting world of blockchain and cryptocurrency, offering services in token creation and integration with innovative platforms like World Coin. My goal is to deliver high-quality, scalable, and efficient solutions tailored to my clients' needs.
+                </p>
+            </div>
+        </section>
+
+        <section id="services">
+            <h2 data-lang-key="nav_services">My Services</h2>
+            <div class="card">
+                <p data-lang-key="services_intro" style="text-align: center; font-style: italic; color: var(--text-secondary-color);">
+                    Crafting innovative solutions for all platforms with special discounts. We accept both fiat and digital currencies.
+                </p>
+                <div class="services-grid">
+                    <div class="service-item" data-lang-key="service_apps">Cross-Platform App Development</div>
+                    <div class="service-item" data-lang-key="service_websites">Website & Web App Development</div>
+                    <div class="service-item" data-lang-key="service_database">Database & Admin Panel Systems</div>
+                    <div class="service-item" data-lang-key="service_crypto">Cryptocurrency & Token Creation</div>
+                    <div class="service-item" data-lang-key="service_worldcoin">World Coin Account Integration</div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="worldcoin">
+            <h2 data-lang-key="worldcoin_title">For World ID Users</h2>
+             <div class="card">
+                <p data-lang-key="worldcoin_intro">Connect your World ID to get started. Payment via Worldcoin (WLD) is available.</p>
+                <div id="world-id-container">
+                    <button class="btn btn-worldcoin" data-lang-key="worldcoin_connect_btn">Connect with World ID (Example)</button>
+                </div>
+                <form id="worldcoin-contact-form" style="margin-top: 20px;">
+                    <h3 data-lang-key="contact_us" style="text-align:center;">Contact Us</h3>
+                    <div class="form-group">
+                        <label for="wc-name" data-lang-key="form_name">Name</label>
+                        <input type="text" id="wc-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="wc-subject" data-lang-key="form_subject">Subject</label>
+                        <input type="text" id="wc-subject" name="subject" required>
+                    </div>
+                    <p data-lang-key="worldcoin_payment_note" style="text-align: center; color: var(--text-secondary-color);">After making a payment with Worldcoin, please notify us via LINE or Phone.</p>
+                </form>
+             </div>
+        </section>
+
+
+        <section id="contact">
+            <h2 data-lang-key="nav_contact">Contact & Payment</h2>
+            <div class="contact-payment-grid">
+                <div class="card">
+                    <h3 data-lang-key="free_consultation">Free Consultation</h3>
+                    <form id="general-contact-form">
+                        <div class="form-group"><label for="name" data-lang-key="form_name">Name</label><input type="text" id="name" name="name" required></div>
+                        <div class="form-group"><label for="subject" data-lang-key="form_subject">Subject</label><input type="text" id="subject" name="subject" required></div>
+                        <div class="form-group"><label for="phone" data-lang-key="form_phone">Contact Number</label><input type="text" id="phone" name="phone" required></div>
+                        <div class="form-group"><label for="email" data-lang-key="form_email">Email</label><input type="email" id="email" name="email" required></div>
+                        <button type="submit" class="btn btn-primary" data-lang-key="form_submit">Send Message</button>
+                    </form>
+                    <hr style="border-color: var(--border-color); margin: 25px 0;">
+                    <div class="contact-info">
+                        <p><strong><span data-lang-key="contact_phone">Phone</span>:</strong> 092-653-3228 | <a href="tel:0926533228" data-lang-key="call_now" style="color: var(--primary-accent-color);">Call Now</a></p>
+                        <p><strong>Email:</strong> winayo@gmail.com</p>
+                        <p><strong>LINE ID:</strong> 0926533228 | <a href="https://line.me/ti/p/~0926533228" target="_blank" data-lang-key="add_line" style="color: var(--primary-accent-color);">Add LINE</a></p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 data-lang-key="payment_title">Payment Information</h3>
+                    <p data-lang-key="payment_method">For hiring or service payment:</p>
+                    <div style="background-color:#2a2a2a; color:#e0e0e0; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <p><strong><span data-lang-key="bank_name">Bank</span>:</strong> Kasikorn Bank</p>
+                        <p><strong><span data-lang-key="account_no">Account No.</span>:</strong> 0201347300</p>
+                        <p><strong><span data-lang-key="account_name">Account Name</span>:</strong> Winai Phanarkat</p>
+                    </div>
+                    <button id="save-info-btn" class="btn btn-secondary" data-lang-key="save_info_btn">Save My Contact & Payment Info</button>
+                </div>
+            </div>
+        </section>
+        
+        <footer style="text-align: center; padding: 30px 0; font-size: 0.9em; color: var(--text-secondary-color);">
+            <p>&copy; 2025 Winai Phanarkat. All Rights Reserved.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const translations = {
+                en: {
+                    lang_toggle_btn: "ไทย",
+                    name: "Winai Phanarkat", tagline: "Full-Stack Developer & Crypto Specialist",
+                    nav_about: "About Me", nav_services: "Services", nav_contact: "Contact & Payment",
+                    about_p1: "Hello! I'm Winai, a passionate Full-Stack Developer with expertise in building modern, responsive web and mobile applications. My experience spans from creating robust backend systems and databases to crafting intuitive user interfaces.",
+                    about_p2: "I also specialize in the exciting world of blockchain and cryptocurrency, offering services in token creation and integration with innovative platforms like World Coin. My goal is to deliver high-quality, scalable, and efficient solutions tailored to my clients' needs.",
+                    services_title: "My Services", services_intro: "Crafting innovative solutions for all platforms with special discounts. We accept both fiat and digital currencies.",
+                    service_apps: "Cross-Platform App Development", service_websites: "Website & Web App Development", service_database: "Database & Admin Panel Systems", service_crypto: "Cryptocurrency & Token Creation", service_worldcoin: "World Coin Account Integration",
+                    worldcoin_title: "World ID", worldcoin_intro: "Connect your World ID to get started. Payment via Worldcoin (WLD) is available.", worldcoin_connect_btn: "Connect with World ID (Example)", worldcoin_payment_note: "After making a payment with Worldcoin, please notify us via LINE or Phone.",
+                    contact_us: "Contact Us", free_consultation: "Free Consultation", form_name: "Name", form_subject: "Subject", form_phone: "Contact Number", form_email: "Email", form_submit: "Send Message",
+                    contact_phone: "Phone", call_now: "Call Now", add_line: "Add LINE",
+                    payment_title: "Payment Information", payment_method: "For hiring or service payment:", bank_name: "Bank", account_no: "Account No.", account_name: "Account Name",
+                    save_info_btn: "Save My Contact & Payment Info",
+                },
+                th: {
+                    lang_toggle_btn: "EN",
+                    name: "วินัย ผันอากาศ", tagline: "นักพัฒนา Full-Stack และผู้เชี่ยวชาญด้านคริปโต",
+                    nav_about: "เกี่ยวกับฉัน", nav_services: "บริการ", nav_contact: "ติดต่อและชำระเงิน",
+                    about_p1: "สวัสดีครับ! ผมวินัย เป็นนักพัฒนา Full-Stack ที่มีความมุ่งมั่นในการสร้างสรรค์เว็บและโมบายแอปพลิเคชันที่ทันสมัยและตอบสนองต่อทุกการใช้งาน ประสบการณ์ของผมครอบคลุมตั้งแต่การสร้างระบบหลังบ้านและฐานข้อมูลที่แข็งแกร่ง ไปจนถึงการออกแบบส่วนติดต่อผู้ใช้ที่สวยงามและใช้งานง่าย",
+                    about_p2: "นอกจากนี้ ผมยังเชี่ยวชาญในโลกของบล็อกเชนและคริปโตเคอเรนซี โดยให้บริการสร้างโทเคนและเชื่อมต่อกับแพลตฟอร์มแห่งนวัตกรรมอย่าง World Coin เป้าหมายของผมคือการส่งมอบงานคุณภาพสูงที่ยืดหยุ่นและมีประสิทธิภาพซึ่งตอบโจทย์ความต้องการของลูกค้าอย่างแท้จริง",
+                    services_title: "บริการของเรา", services_intro: "รับสร้างสรรค์โซลูชันสำหรับทุกแพลตฟอร์มพร้อมส่วนลดพิเศษ รับชำระทั้งเงิน Fiat และเงินดิจิทัล",
+                    service_apps: "รับทำแอปพลิเคชันทุกแพลตฟอร์ม", service_websites: "รับทำเว็บไซต์และเว็บแอปพลิเคชัน", service_database: "รับทำระบบฐานข้อมูลและหลังบ้าน", service_crypto: "รับสร้างเหรียญคริปโตเคอเรนซี", service_worldcoin: "รับเชื่อมต่อกับบัญชี World Coin",
+                    worldcoin_title: "สำหรับผู้ใช้ World ID", worldcoin_intro: "เชื่อมต่อ World ID ของคุณเพื่อเริ่มต้น สามารถชำระเงินผ่าน Worldcoin (WLD) ได้", worldcoin_connect_btn: "เชื่อมต่อด้วย World ID (ตัวอย่าง)", worldcoin_payment_note: "หลังจากชำระเงินด้วย Worldcoin แล้ว กรุณาแจ้งทาง LINE หรือโทรศัพท์",
+                    contact_us: "ติดต่อเรา", free_consultation: "ปรึกษาฟรี", form_name: "ชื่อ", form_subject: "เรื่องที่ต้องการติดต่อ", form_phone: "เบอร์ติดต่อ", form_email: "อีเมล", form_submit: "ส่งข้อความ",
+                    contact_phone: "เบอร์โทร", call_now: "โทรเลย", add_line: "เพิ่มเพื่อน LINE",
+                    payment_title: "ข้อมูลการชำระเงิน", payment_method: "สำหรับการจ้างงานหรือชำระค่าบริการ:", bank_name: "ธนาคาร", account_no: "เลขที่บัญชี", account_name: "ชื่อบัญชี",
+                    save_info_btn: "บันทึกข้อมูลติดต่อและชำระเงิน",
+                }
+            };
+
+            const langToggleButton = document.getElementById('lang-toggle');
+            const translatableElements = document.querySelectorAll('[data-lang-key]');
+
+            function switchLanguage(lang) {
+                document.documentElement.lang = lang;
+                translatableElements.forEach(el => {
+                    const key = el.getAttribute('data-lang-key');
+                    if (translations[lang] && translations[lang][key]) {
+                        el.textContent = translations[lang][key];
+                    }
+                });
+                langToggleButton.textContent = translations[lang].lang_toggle_btn;
+            }
+
+            langToggleButton.addEventListener('click', () => {
+                const newLang = document.documentElement.lang === 'en' ? 'th' : 'en';
+                switchLanguage(newLang);
+            });
+            
+            // Save Info Button (no changes needed)
+            document.getElementById('save-info-btn').addEventListener('click', () => {
+                const infoTextEn = `Contact: Winai Phanarkat\nPhone: 092-653-3228\nLINE ID: 0926533228\n\nBank: Kasikorn Bank\nAcc No: 0201347300\nAcc Name: Winai Phanarkat`;
+                const infoTextTh = `ติดต่อ: วินัย พานาคัท\nเบอร์โทร: 092-653-3228\nLINE ID: 0926533228\n\nธนาคาร: กสิกรไทย\nเลขบัญชี: 0201347300\nชื่อบัญชี: วินัย พานาคัท`;
+                alert(document.documentElement.lang === 'en' ? infoTextEn : infoTextTh);
+            });
+
+            // --- Active Nav Link on Scroll ---
+            const sections = document.querySelectorAll('.right-pane section');
+            const navLinks = document.querySelectorAll('nav a.nav-link');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Set initial language
+            switchLanguage('en');
+        });
+    </script>
+</body>
+</html>
