@@ -1,0 +1,301 @@
+import React, { useState, useEffect, useRef } from 'react';
+import * as d3 from 'd3';
+
+const App = () => {
+  const [activeTab, setActiveTab] = useState('market-trends');
+  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState({});
+  const [error, setError] = useState(null);
+
+  // Example data simulating market trends and consumer behavior
+  const mockData = {
+    marketTrends: [
+      { date: '2023-01-01', trend: 150 },
+      { date: '2023-02-01', trend: 160 },
+      { date: '2023-03-01', trend: 175 },
+      { date: '2023-04-01', trend: 180 },
+      { date: '2023-05-01', trend: 195 },
+      { date: '2023-06-01', trend: 210 },
+      { date: '2023-07-01', trend: 200 },
+      { date: '2023-08-01', trend: 220 },
+      { date: '2023-09-01', trend: 235 },
+      { date: '2023-10-01', trend: 240 },
+      { date: '2023-11-01', trend: 255 },
+      { date: '2023-12-01', trend: 270 },
+    ],
+    consumerBehavior: [
+      { category: 'Electronics', purchases: 350 },
+      { category: 'Apparel', purchases: 450 },
+      { category: 'Home Goods', purchases: 200 },
+      { category: 'Health', purchases: 280 },
+      { category: 'Automotive', purchases: 150 },
+    ],
+    prediction: {
+      nextMonth: 'คาดการณ์ว่าเดือนหน้าแนวโน้มตลาดจะเพิ่มขึ้น 10% โดยเฉพาะในกลุ่มผลิตภัณฑ์อิเล็กทรอนิกส์และสินค้าเพื่อสุขภาพ'
+    },
+  };
+
+  useEffect(() => {
+    // Simulate fetching data from a backend
+    const fetchData = async () => {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call delay
+        setData(mockData);
+        setIsLoading(false);
+      } catch (e) {
+        console.error('Error fetching data:', e);
+        setError('ไม่สามารถโหลดข้อมูลได้ โปรดลองอีกครั้งในภายหลัง');
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const TabButton = ({ tabId, title, isActive, onClick }) => (
+    <button
+      onClick={() => onClick(tabId)}
+      className={`px-4 py-2 font-medium transition-all duration-300 rounded-t-lg
+        ${isActive ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+    >
+      {title}
+    </button>
+  );
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center h-full min-h-[300px]">
+          <div className="w-12 h-12 border-4 border-dashed rounded-full animate-spin border-indigo-600"></div>
+        </div>
+      );
+    }
+    if (error) {
+      return (
+        <div className="flex justify-center items-center h-full min-h-[300px] text-red-500">
+          <p>{error}</p>
+        </div>
+      );
+    }
+    
+    switch (activeTab) {
+      case 'market-trends':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">แนวโน้มตลาด</h2>
+            <p className="text-gray-600 mb-6">แสดงแนวโน้มตลาดในรอบปีที่ผ่านมา</p>
+            <LineChart data={data.marketTrends} />
+            <div className="mt-8 p-4 bg-indigo-50 border-l-4 border-indigo-500 rounded-lg">
+                <p className="font-semibold text-indigo-800">บทสรุปและคาดการณ์จาก AI:</p>
+                <p className="text-indigo-700">{data.prediction.nextMonth}</p>
+            </div>
+          </div>
+        );
+      case 'consumer-behavior':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-semibold mb-4 text-gray-800">พฤติกรรมผู้บริโภค</h2>
+            <p className="text-gray-600 mb-6">แสดงการซื้อของผู้บริโภคแบ่งตามหมวดหมู่</p>
+            <BarChart data={data.consumerBehavior} />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-8 font-sans antialiased text-gray-800">
+      <div className="bg-white rounded-3xl shadow-2xl p-6 md:p-10 max-w-5xl mx-auto">
+        <h1 className="text-4xl font-extrabold text-center text-gray-900 mb-4">AI Data Platform</h1>
+        <p className="text-center text-gray-600 mb-8">
+          วิเคราะห์ข้อมูลขนาดใหญ่เพื่อคาดการณ์แนวโน้มตลาดและพฤติกรรมผู้บริโภค
+        </p>
+
+        <div className="flex justify-center border-b border-gray-200 mb-8">
+          <TabButton
+            tabId="market-trends"
+            title="แนวโน้มตลาด"
+            isActive={activeTab === 'market-trends'}
+            onClick={setActiveTab}
+          />
+          <TabButton
+            tabId="consumer-behavior"
+            title="พฤติกรรมผู้บริโภค"
+            isActive={activeTab === 'consumer-behavior'}
+            onClick={setActiveTab}
+          />
+        </div>
+
+        <div className="bg-white rounded-xl shadow-md p-4">
+          {renderContent()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// D3 Line Chart Component
+const LineChart = ({ data }) => {
+  const svgRef = useRef();
+
+  useEffect(() => {
+    if (!data || data.length === 0) return;
+    
+    // Clear previous chart
+    d3.select(svgRef.current).selectAll('*').remove();
+
+    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+    const width = 800 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    const svg = d3.select(svgRef.current)
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleTime()
+      .domain(d3.extent(data, d => new Date(d.date)))
+      .range([0, width]);
+
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x).tickFormat(d3.timeFormat('%b %y')));
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.trend)])
+      .nice()
+      .range([height, 0]);
+
+    svg.append('g')
+      .call(d3.axisLeft(y));
+
+    const line = d3.line()
+      .x(d => x(new Date(d.date)))
+      .y(d => y(d.trend));
+
+    svg.append('path')
+      .datum(data)
+      .attr('fill', 'none')
+      .attr('stroke', '#4f46e5')
+      .attr('stroke-width', 2)
+      .attr('d', line);
+      
+    // Add tooltip
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0)
+      .style("position", "absolute")
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "5px")
+      .style("padding", "10px");
+
+    svg.selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("cx", d => x(new Date(d.date)))
+      .attr("cy", d => y(d.trend))
+      .attr("r", 5)
+      .attr("fill", "#4f46e5")
+      .on("mouseover", (event, d) => {
+          tooltip.transition()
+              .duration(200)
+              .style("opacity", .9);
+          tooltip.html(`วันที่: ${d.date}<br/>แนวโน้ม: ${d.trend}`)
+              .style("left", (event.pageX + 15) + "px")
+              .style("top", (event.pageY - 28) + "px");
+      })
+      .on("mouseout", (d) => {
+          tooltip.transition()
+              .duration(500)
+              .style("opacity", 0);
+      });
+      
+  }, [data]);
+
+  return <svg ref={svgRef} className="w-full h-auto"></svg>;
+};
+
+// D3 Bar Chart Component
+const BarChart = ({ data }) => {
+  const svgRef = useRef();
+
+  useEffect(() => {
+    if (!data || data.length === 0) return;
+    
+    // Clear previous chart
+    d3.select(svgRef.current).selectAll('*').remove();
+
+    const margin = { top: 20, right: 30, bottom: 80, left: 50 };
+    const width = 800 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    const svg = d3.select(svgRef.current)
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleBand()
+      .range([0, width])
+      .domain(data.map(d => d.category))
+      .padding(0.2);
+
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll('text')
+      .attr('transform', 'translate(-10,0)rotate(-45)')
+      .style('text-anchor', 'end');
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.purchases)])
+      .nice()
+      .range([height, 0]);
+
+    svg.append('g')
+      .call(d3.axisLeft(y));
+      
+    // Add tooltip
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0)
+      .style("position", "absolute")
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "1px")
+      .style("border-radius", "5px")
+      .style("padding", "10px");
+
+    svg.selectAll('myRect')
+      .data(data)
+      .enter()
+      .append('rect')
+      .attr('x', d => x(d.category))
+      .attr('y', d => y(d.purchases))
+      .attr('width', x.bandwidth())
+      .attr('height', d => height - y(d.purchases))
+      .attr('fill', '#4f46e5')
+      .on("mouseover", (event, d) => {
+          tooltip.transition()
+              .duration(200)
+              .style("opacity", .9);
+          tooltip.html(`หมวดหมู่: ${d.category}<br/>จำนวนการซื้อ: ${d.purchases}`)
+              .style("left", (event.pageX + 15) + "px")
+              .style("top", (event.pageY - 28) + "px");
+      })
+      .on("mouseout", (d) => {
+          tooltip.transition()
+              .duration(500)
+              .style("opacity", 0);
+      });
+      
+  }, [data]);
+
+  return <svg ref={svgRef} className="w-full h-auto"></svg>;
+};
+
+export default App;
