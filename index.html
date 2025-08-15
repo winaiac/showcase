@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SusanAI Online - Full Stack Platform</title>
+    <!-- Tailwind CSS CDN for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Import a custom font to ensure a consistent look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            /* Prevent horizontal scrolling */
+            transition: background-color 0.5s ease;
+            /* Smooth transition for light/dark mode */
+        }
+
+        /* --- Custom Styles for Background and Effects --- */
+        .background-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .background-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .background-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            /* Adjust opacity for background dimming */
+            z-index: 1;
+        }
+
+        .background-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            /* Position canvas on top of the image */
+            pointer-events: none;
+            /* Allow clicks to pass through to content behind */
+        }
+
+        /* Transparent menu with shadow */
+        .glass-menu {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Wind effect animation */
+        @keyframes wind-gust {
+            0% {
+                background-position: 0% 50%;
+                opacity: 0.1;
+            }
+
+            50% {
+                background-position: 100% 50%;
+                opacity: 0.2;
+            }
+
+            100% {
+                background-position: 0% 50%;
+                opacity: 0.1;
+            }
+        }
+
+        .wind-effect-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+            background-size: 200% 100%;
+            animation: wind-gust 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse-menu {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+        }
+
+        .pulse-menu {
+            animation: pulse-menu 2s infinite;
+        }
+
+        .intro-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            transition: opacity 1s ease-out;
+            pointer-events: none;
+        }
+
+        .intro-text {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+            transition: opacity 1s ease-out;
+        }
+
+        .susanai-logo {
+            transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+        }
+
+        .susanai-logo-small {
+            transform: scale(0.65);
+            opacity: 0.5;
+        }
+
+        /* --- Custom Styles for Video Intro --- */
+        .video-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+            z-index: 1000;
+        }
+
+        .video-container video {
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+        }
+
+        .skip-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1001;
+        }
+
+        .main-app-container {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* --- Dark Mode Styles --- */
+        .dark-mode .bg-white {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .dark-mode .text-gray-900 {
+            color: #fff !important;
+        }
+
+        .dark-mode .text-gray-700 {
+            color: #e2e8f0 !important;
+        }
+
+        .dark-mode .border-gray-300 {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            color: #333;
+        }
+
+        /* Specific modal for job details */
+        .job-detail-modal-box {
+            background-color: #f7fafc;
+            color: #1a202c;
+            text-align: left;
+            max-width: 700px;
+            padding: 2.5rem;
+        }
+
+        .job-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .job-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+
+    <!-- Video Intro Section -->
+    <div id="videoContainer" class="video-container">
+        <video id="introVideo" autoplay muted playsinline>
+            <source src="https://winaiac.github.io/firebirdre/eyep.mp4" type="video/mp4">
+            <source src="https://winaiac.github.io/firebirdre/yasu.mp4" type="video/mp4">
+            <source src="https://winaiac.github.io/firebirdre/pandora.mp4" type="video/mp4">
+            เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ
+        </video>
+        <button id="skipButton"
+            class="skip-button bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+            ข้ามเข้าแอป
+        </button>
+    </div>
+
+    <!-- Main Application Container (Initially hidden) -->
+    <div id="mainAppContainer" class="main-app-container">
+
+        <!-- Background and Effects -->
+        <div class="background-container">
+            <img id="bgImage" class="background-image"
+                src="https://placehold.co/1920x1080/000000/FFFFFF?text=Eye Pyramid">
+            <canvas id="effectCanvas" class="background-canvas"></canvas>
+        </div>
+
+        <!-- Navigation Bar -->
+        <nav class="glass-menu fixed top-0 left-0 w-full z-20 p-4 flex justify-between items-center px-8">
+            <div class="flex items-center space-x-4">
+                <h1 id="susanAILogo" class="text-2xl font-bold text-white transition-all duration-1000">SusanAI</h1>
+                <div class="hidden md:flex space-x-4">
+                    <a href="#" id="homeLink" class="text-white hover:text-yellow-400">หน้าหลัก</a>
+                    <a href="#" id="jobsLink" class="text-white hover:text-yellow-400">ตัวอย่างงาน</a>
+                    <!-- New Links Added Here -->
+                    <a href="#" id="planaLink" class="text-white hover:text-yellow-400">แผน A</a>
+                    <a href="#" id="planbLink" class="text-white hover:text-yellow-400">แผน B</a>
+                    <a href="#" id="plancLink" class="text-white hover:text-yellow-400">แผน C</a>
+                    <a href="#" id="aboutLink" class="text-white hover:text-yellow-400">เกี่ยวกับเรา</a>
+                </div>
+            </div>
+            <div class="relative md:hidden">
+                <span class="text-white text-sm mr-2 pulse-menu">เมนูอื่น ๆ</span>
+                <svg class="h-6 w-6 text-white inline-block animate-bounce" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </div>
+        </nav>
+
+        <!-- Welcome Intro Message -->
+        <div id="intro-message" class="intro-container">
+            <p id="welcome-text" class="text-center intro-text"></p>
+        </div>
+
+        <!-- Main Content Area -->
+        <main id="main-content"
+            class="flex-grow p-8 mt-24 z-10 flex flex-col items-center justify-center text-center opacity-0 transition-opacity duration-1000">
+            <div class="bg-black/40 p-8 rounded-2xl shadow-xl max-w-2xl w-full">
+                <h2 class="text-3xl font-bold mb-4 text-white">ยินดีต้อนรับกลับ</h2>
+                <p id="username-display" class="text-gray-300">
+                    นี่คือแพลตฟอร์ม Full Stack ที่คุณสามารถปรับแต่งได้ตามต้องการ
+                </p>
+                <div class="mb-8 mt-6">
+                    <textarea id="memory-textarea"
+                        class="w-full p-4 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 bg-black/20 text-white"
+                        rows="5" placeholder="เขียนความทรงจำหรือข้อความถึงผู้ล่วงลับที่นี่..."></textarea>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button id="toggleLightButton"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                        เปิด/ปิดไฟ
+                    </button>
+                    <button id="buyFlowerButton"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                        ซื้อดอกไม้เคารพ
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Job Showcase Page (Initially hidden) -->
+        <section id="jobs-content" class="p-8 mt-24 z-10 hidden opacity-0 transition-opacity duration-1000">
+            <div class="container mx-auto">
+                <h2 class="text-4xl font-bold text-center text-white mb-10">ตัวอย่างผลงานของเรา</h2>
+                <p class="text-center text-gray-300 mb-12 max-w-3xl mx-auto">
+                    สำรวจผลงานที่เราได้สร้างสรรค์ขึ้นมาเพื่อตอบสนองความต้องการที่หลากหลายของลูกค้า
+                    ไม่ว่าจะเป็นเว็บแอปพลิเคชัน, แพลตฟอร์ม AI, หรือระบบจัดการข้อมูล
+                </p>
+
+                <!-- Grid for Job Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Job Card 1 -->
+                    <div
+                        class="job-card bg-black/40 p-6 rounded-2xl shadow-xl border border-gray-700 flex flex-col items-center text-center">
+                        <img src="https://placehold.co/400x250/334155/e2e8f0?text=Project+A" alt="Project A"
+                            class="rounded-lg mb-4">
+                        <h3 class="text-2xl font-bold text-white mb-2">เว็บแอปพลิเคชันสำหรับธุรกิจขนาดเล็ก</h3>
+                        <p class="text-gray-300 mb-4 flex-grow">
+                            พัฒนาเว็บแอปฯ ที่ช่วยจัดการลูกค้า, การนัดหมาย, และการชำระเงิน พร้อมระบบรายงานผลแบบเรียลไทม์
+                        </p>
+                        <button
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-full shadow-md transition duration-300">
+                            ดูรายละเอียด
+                        </button>
+                    </div>
+
+                    <!-- Job Card 2 -->
+                    <div
+                        class="job-card bg-black/40 p-6 rounded-2xl shadow-xl border border-gray-700 flex flex-col items-center text-center">
+                        <img src="https://placehold.co/400x250/0f172a/e2e8f0?text=Project+B" alt="Project B"
+                            class="rounded-lg mb-4">
+                        <h3 class="text-2xl font-bold text-white mb-2">แพลตฟอร์ม AI สำหรับการวิเคราะห์ข้อมูล</h3>
+                        <p class="text-gray-300 mb-4 flex-grow">
+                            สร้างแพลตฟอร์ม AI
+                            ที่สามารถประมวลผลข้อมูลขนาดใหญ่เพื่อคาดการณ์แนวโน้มตลาดและพฤติกรรมผู้บริโภค
+                        </p>
+                        <button
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-full shadow-md transition duration-300">
+                            ดูรายละเอียด
+                        </button>
+                    </div>
+
+                    <!-- Job Card 3 -->
+                    <div
+                        class="job-card bg-black/40 p-6 rounded-2xl shadow-xl border border-gray-700 flex flex-col items-center text-center">
+                        <img src="https://placehold.co/400x250/1e293b/e2e8f0?text=Project+C" alt="Project C"
+                            class="rounded-lg mb-4">
+                        <h3 class="text-2xl font-bold text-white mb-2">ระบบจัดการองค์กร (ERP)</h3>
+                        <p class="text-gray-300 mb-4 flex-grow">
+                            พัฒนาระบบ ERP
+                            ที่ปรับแต่งได้ตามความต้องการของแต่ละองค์กร
+                            ครอบคลุมตั้งแต่การเงินไปจนถึงการจัดการทรัพยากรบุคคล
+                        </p>
+                        <button
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-full shadow-md transition duration-300">
+                            ดูรายละเอียด
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Back to Home Button -->
+                <div class="text-center mt-12">
+                    <button id="backToHomeBtn" class="bg-gray-800 text-white px-6 py-3 rounded-full hover:bg-gray-700 transition">
+                        &lt; กลับสู่หน้าหลัก
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- NEW: External Content Page (Initially hidden) -->
+        <section id="external-content" class="p-8 mt-24 z-10 hidden opacity-0 transition-opacity duration-1000 container mx-auto text-white">
+            <!-- Content from external HTML files will be loaded here -->
+        </section>
+
+
+        <!-- Buttons for changing background -->
+        <div id="backgroundButtons" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 flex space-x-4">
+            <button id="eyeppBtn"
+                class="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition">Eye Pyramid</button>
+            <button id="pandorapBtn"
+                class="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition">Pandora</button>
+            <button id="yasupBtn"
+                class="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-700 transition">Sakura</button>
+        </div>
+
+    </div>
+
+    <!-- Modals (overlays) -->
+    <!-- Flower Message Overlay -->
+    <div id="flowerMessageOverlay" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-2xl font-bold mb-4">ขอบคุณสำหรับการซื้อดอกไม้!</h2>
+            <p class="text-lg mb-6">ดอกไม้จะคงอยู่ได้ 7 วัน ก่อนที่จะเหี่ยวแห้งไป</p>
+            <button id="closeFlowerMessage"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-full shadow-md transition duration-300">
+                ตกลง
+            </button>
+        </div>
+    </div>
+
+    <!-- Job Detail Modal (to be dynamically populated) -->
+    <div id="jobDetailModal" class="modal-overlay">
+        <div class="modal-box job-detail-modal-box">
+            <h3 id="jobDetailTitle" class="text-3xl font-bold mb-4 text-gray-900"></h3>
+            <p id="jobDetailDescription" class="text-gray-700 mb-6"></p>
+            <p class="text-gray-900 font-semibold">เทคโนโลยีที่ใช้:</p>
+            <ul id="jobDetailTech" class="list-disc list-inside text-gray-700 mb-6"></ul>
+            <button id="closeJobDetailModal"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-5 rounded-full shadow-md transition duration-300">
+                ปิด
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elements from the page ---
+            const introVideo = document.getElementById('introVideo');
+            const videoContainer = document.getElementById('videoContainer');
+            const skipButton = document.getElementById('skipButton');
+            const mainAppContainer = document.getElementById('mainAppContainer');
+            const bgImage = document.getElementById('bgImage');
+            const effectCanvas = document.getElementById('effectCanvas');
+            const susanAILogo = document.getElementById('susanAILogo');
+            const introMessageContainer = document.getElementById('intro-message');
+            const welcomeText = document.getElementById('welcome-text');
+            const mainContent = document.getElementById('main-content');
+            const jobsContent = document.getElementById('jobs-content');
+            const backgroundButtons = document.getElementById('backgroundButtons');
+            const toggleLightButton = document.getElementById('toggleLightButton');
+            const buyFlowerButton = document.getElementById('buyFlowerButton');
+            const flowerMessageOverlay = document.getElementById('flowerMessageOverlay');
+            const closeFlowerMessage = document.getElementById('closeFlowerMessage');
+
+            // Navigation links and buttons
+            const homeLink = document.getElementById('homeLink');
+            const jobsLink = document.getElementById('jobsLink');
+            const backToHomeBtn = document.getElementById('backToHomeBtn');
+            const jobDetailModal = document.getElementById('jobDetailModal');
+            const closeJobDetailModal = document.getElementById('closeJobDetailModal');
+            const jobDetailTitle = document.getElementById('jobDetailTitle');
+            const jobDetailDescription = document.getElementById('jobDetailDescription');
+            const jobDetailTech = document.getElementById('jobDetailTech');
+
+            // --- NEW: Elements for dynamic content loading ---
+            const externalContent = document.getElementById('external-content');
+            const planaLink = document.getElementById('planaLink');
+            const planbLink = document.getElementById('planbLink');
+            const plancLink = document.getElementById('plancLink');
+            const aboutLink = document.getElementById('aboutLink');
+            const contentSections = [mainContent, jobsContent, externalContent];
+
+            const ctx = effectCanvas.getContext('2d');
+            let animationFrameId = null;
+
+            const isLoggedIn = true; // Simulating user login status
+            const userName = "ผู้ใช้คนเก่ง";
+
+            const backgroundImages = {
+                eyepp: 'https://winaiac.github.io/firebirdre/eyepp.png',
+                pandorap: 'https://winaiac.github.io/firebirdre/pandorap.png',
+                yasup: 'https://winaiac.github.io/firebirdre/yasup.png'
+            };
+
+            const jobDetails = [{
+                title: "เว็บแอปพลิเคชันสำหรับธุรกิจขนาดเล็ก",
+                description: "เราได้พัฒนาเว็บแอปพลิเคชันแบบครบวงจรสำหรับธุรกิจขนาดเล็กที่ต้องการระบบจัดการลูกค้า (CRM), การนัดหมาย, และการชำระเงินที่ง่ายต่อการใช้งานและมีประสิทธิภาพ ระบบนี้ช่วยให้ธุรกิจสามารถติดตามลูกค้าและเพิ่มยอดขายได้อย่างรวดเร็ว",
+                tech: ["React", "Node.js", "Express", "MongoDB", "Tailwind CSS"]
+            }, {
+                title: "แพลตฟอร์ม AI สำหรับการวิเคราะห์ข้อมูล",
+                description: "โปรเจกต์นี้เป็นการสร้างแพลตฟอร์ม AI ที่สามารถประมวลผลข้อมูลตลาดขนาดใหญ่เพื่อคาดการณ์แนวโน้มและวิเคราะห์พฤติกรรมผู้บริโภคได้อย่างแม่นยำ ช่วยให้ลูกค้าของเราตัดสินใจทางธุรกิจได้อย่างมีข้อมูลรองรับ",
+                tech: ["Python", "TensorFlow", "Scikit-learn", "Flask", "D3.js"]
+            }, {
+                title: "ระบบจัดการองค์กร (ERP)",
+                description: "พัฒนาระบบ ERP ที่ปรับแต่งได้ตามความต้องการของแต่ละองค์กร ครอบคลุมตั้งแต่การจัดการการเงิน, บัญชี, การจัดการทรัพยากรบุคคล, และการจัดการสินค้าคงคลัง ระบบนี้ถูกออกแบบมาให้ยืดหยุ่นและขยายขนาดได้ตามการเติบโตของธุรกิจ",
+                tech: ["Java", "Spring Boot", "MySQL", "Angular", "Docker"]
+            }];
+
+            let isDarkMode = false;
+            let activeEffect = null;
+            let stars = [];
+            let petals = [];
+
+            // --- Canvas Effects Logic (No changes here) ---
+            function resizeCanvas() {
+                effectCanvas.width = window.innerWidth;
+                effectCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            function initStars() {
+                stars = [];
+                for (let i = 0; i < 300; i++) {
+                    stars.push({
+                        x: Math.random() * effectCanvas.width,
+                        y: Math.random() * effectCanvas.height,
+                        radius: Math.random() * 1.5,
+                        opacity: Math.random() * 0.5 + 0.1,
+                        velocity: Math.random() * 0.02 + 0.01,
+                    });
+                }
+            }
+
+            function drawStars() {
+                ctx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+                stars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+                    ctx.fill();
+                    star.opacity += star.velocity;
+                    if (star.opacity > 0.8 || star.opacity < 0.1) {
+                        star.velocity *= -1;
+                    }
+                });
+            }
+
+            function initPetals() {
+                petals = [];
+                for (let i = 0; i < 50; i++) {
+                    petals.push({
+                        x: Math.random() * effectCanvas.width,
+                        y: Math.random() * effectCanvas.height,
+                        size: Math.random() * 10 + 5,
+                        opacity: Math.random() * 0.7 + 0.3,
+                        rotation: Math.random() * 360,
+                        rotationSpeed: Math.random() * 0.02 - 0.01,
+                        xVelocity: Math.random() * 0.5 - 0.25,
+                        yVelocity: Math.random() * 1.5 + 0.5
+                    });
+                }
+            }
+
+            function drawPetals() {
+                ctx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+                petals.forEach(petal => {
+                    ctx.beginPath();
+                    ctx.fillStyle = `rgba(255, 182, 193, ${petal.opacity})`;
+                    ctx.ellipse(petal.x, petal.y, petal.size / 2, petal.size, petal.rotation, 0, Math.PI * 2);
+                    ctx.fill();
+                    petal.x += petal.xVelocity;
+                    petal.y += petal.yVelocity;
+                    petal.rotation += petal.rotationSpeed;
+                    if (petal.y > effectCanvas.height) {
+                        petal.x = Math.random() * effectCanvas.width;
+                        petal.y = -20;
+                        petal.opacity = Math.random() * 0.7 + 0.3;
+                    }
+                });
+            }
+
+            function updateBackground(src, effectName) {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+                ctx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+                document.querySelectorAll('.wind-effect-overlay').forEach(el => el.remove());
+                bgImage.style.opacity = 0;
+                setTimeout(() => {
+                    bgImage.src = src;
+                    bgImage.onload = () => {
+                        bgImage.style.opacity = 1;
+                        switch (effectName) {
+                            case 'yasup':
+                                activeEffect = drawPetals;
+                                initPetals();
+                                break;
+                            case 'pandorap':
+                                activeEffect = drawStars;
+                                initStars();
+                                break;
+                            case 'eyepp':
+                                activeEffect = null;
+                                const windOverlay = document.createElement('div');
+                                windOverlay.className = 'wind-effect-overlay';
+                                document.querySelector('.background-container').appendChild(windOverlay);
+                                break;
+                            default:
+                                activeEffect = null;
+                                break;
+                        }
+                        if (activeEffect) {
+                            function animateLoop() {
+                                activeEffect();
+                                animationFrameId = requestAnimationFrame(animateLoop);
+                            }
+                            animateLoop();
+                        }
+                    };
+                }, 500);
+            }
+
+            // --- App Flow & Page Navigation Logic ---
+            function showPlatformIntro() {
+                if (isLoggedIn) {
+                    welcomeText.textContent = `ยินดีต้อนรับ คุณ ${userName} สู่แพลตฟอร์ม SusanAI`;
+                } else {
+                    welcomeText.textContent = "ยินดีต้อนรับสู่แพลตฟอร์ม SusanAI";
+                }
+                introMessageContainer.style.opacity = '1';
+                setTimeout(() => {
+                    introMessageContainer.style.opacity = '0';
+                    susanAILogo.classList.add('susanai-logo-small');
+                    setTimeout(() => {
+                        introMessageContainer.remove();
+                        // Show the main content page by default
+                        showPage('main-content');
+                    }, 1000);
+                }, 5000);
+            }
+
+            function showMainApp() {
+                videoContainer.style.display = 'none';
+                mainAppContainer.style.display = 'block';
+                updateBackground(backgroundImages.eyepp, 'eyepp');
+                showPlatformIntro();
+            }
+
+            // NEW: Central function to switch between content pages
+            function showPage(pageToShowId) {
+                contentSections.forEach(section => {
+                    if (section.id === pageToShowId) {
+                        section.classList.remove('hidden');
+                        setTimeout(() => section.style.opacity = '1', 50); // Fade in
+                    } else {
+                        section.style.opacity = '0'; // Fade out
+                        setTimeout(() => section.classList.add('hidden'), 500); // Hide after fade out
+                    }
+                });
+
+                // Show/Hide buttons based on the current page
+                const isHomePage = pageToShowId === 'main-content';
+                backgroundButtons.classList.toggle('hidden', !isHomePage);
+            }
+            
+            // NEW: Function to load content from external HTML files
+            async function loadExternalContent(url) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok. Status: ${response.status}`);
+                    }
+                    const html = await response.text();
+                    externalContent.innerHTML = html;
+                    showPage('external-content');
+                } catch (error) {
+                    console.error('Error fetching content:', error);
+                    externalContent.innerHTML = `<div class="bg-red-900/70 p-8 rounded-xl text-center">
+                                                    <h2 class="text-3xl font-bold mb-4">เกิดข้อผิดพลาด</h2>
+                                                    <p>ไม่สามารถโหลดเนื้อหาจาก '${url}' ได้ กรุณาตรวจสอบว่าไฟล์มีอยู่จริงและลองอีกครั้ง</p>
+                                                 </div>`;
+                    showPage('external-content');
+                }
+            }
+
+            function showJobDetail(jobIndex) {
+                const job = jobDetails[jobIndex];
+                jobDetailTitle.textContent = job.title;
+                jobDetailDescription.textContent = job.description;
+                jobDetailTech.innerHTML = "";
+                job.tech.forEach(tech => {
+                    const li = document.createElement('li');
+                    li.textContent = tech;
+                    jobDetailTech.appendChild(li);
+                });
+                jobDetailModal.style.display = 'flex';
+            }
+
+            // --- Event Listeners ---
+            introVideo.addEventListener('ended', showMainApp);
+            skipButton.addEventListener('click', showMainApp);
+
+            // Background change buttons
+            document.getElementById('eyeppBtn').addEventListener('click', () => {
+                updateBackground(backgroundImages.eyepp, 'eyepp');
+            });
+            document.getElementById('pandorapBtn').addEventListener('click', () => {
+                updateBackground(backgroundImages.pandorap, 'pandorap');
+            });
+            document.getElementById('yasupBtn').addEventListener('click', () => {
+                updateBackground(backgroundImages.yasup, 'yasup');
+            });
+
+            // Light/Dark Mode & Flower buttons
+            toggleLightButton.addEventListener('click', () => {
+                isDarkMode = !isDarkMode;
+                document.body.classList.toggle('dark-mode', isDarkMode);
+            });
+            buyFlowerButton.addEventListener('click', () => {
+                flowerMessageOverlay.style.display = 'flex';
+            });
+            closeFlowerMessage.addEventListener('click', () => {
+                flowerMessageOverlay.style.display = 'none';
+            });
+
+            // --- UPDATED: Navigation and Page Switching ---
+            homeLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage('main-content');
+            });
+            jobsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage('jobs-content');
+            });
+            backToHomeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showPage('main-content');
+            });
+
+            // --- NEW: Event listeners for external content links ---
+            planaLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadExternalContent('plana.html');
+            });
+            planbLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadExternalContent('planb.html');
+            });
+            plancLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Correcting the typo from the prompt plbnc.html -> planc.html
+                loadExternalContent('planc.html'); 
+            });
+            aboutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loadExternalContent('aboutwinai.html');
+            });
+
+
+            // Job Card Detail Buttons
+            document.querySelectorAll('.job-card button').forEach((button, index) => {
+                button.addEventListener('click', () => {
+                    showJobDetail(index);
+                });
+            });
+
+            // Close Job Detail Modal
+            closeJobDetailModal.addEventListener('click', () => {
+                jobDetailModal.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+
+</html>
